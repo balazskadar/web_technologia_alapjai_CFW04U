@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <title>Git App - Adatlap</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div style="max-width: 600px; margin: 0 auto;">
+        <h1>Felhasználói adatlap</h1>
+        <div id="profile-result">Betöltés...</div>
+        <br>
+        <a href="user-search.html" class="btn btn-secondary">Vissza a kereséshez</a>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        async function loadProfile() {
+            const params = new URLSearchParams(window.location.search);
+            const userId = params.get('id'); // Query paraméter fogadása
+            const resultDiv = document.querySelector('#profile-result');
+
+            if (!userId) {
+                resultDiv.innerHTML = 'Nincs felhasználó kiválasztva.';
+                return;
+            }
+
+            try {
+                const res = await fetch('https://api.github.com/users/' + userId, {
+                    headers: { 'Authorization': 'Bearer ' + GH_ACCESS_TOKEN }
+                });
+                const u = await res.json();
+                let html = `<div class="card">`;
+                html += `<img src="${u.avatar_url}" class="profile-avatar">`;
+                if (u.name) html += `<h2>${u.name}</h2>`;
+                if (u.blog) html += `<p><strong>Blog:</strong> <a href="${u.blog}" target="_blank">${u.blog}</a></p>`;
+                if (u.location) html += `<p><strong>Helyszín:</strong> ${u.location}</p>`;
+                if (u.bio) html += `<p><strong>Bio:</strong> ${u.bio}</p>`;
+                if (u.public_repos !== undefined) html += `<p><strong>Repók:</strong> ${u.public_repos}</p>`;
+                if (u.followers !== undefined) html += `<p><strong>Követők:</strong> ${u.followers}</p>`;
+                html += `</div>`;
+                
+                resultDiv.innerHTML = html;
+            } catch (err) { resultDiv.innerHTML = 'Hiba az adatok betöltésekor.'; }
+        }
+        loadProfile();
+    </script>
+</body>
+</html>
